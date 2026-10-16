@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: tmps-lab
+  jpa:
+      hibernate:
+          ddl-auto: validate
+  flyway:
+      enabled: true
