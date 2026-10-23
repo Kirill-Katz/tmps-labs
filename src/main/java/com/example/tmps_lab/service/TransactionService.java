@@ -2,6 +2,7 @@ package com.example.tmps_lab.service;
 
 import com.example.tmps_lab.dto.TransactionCommand;
 import com.example.tmps_lab.model.Transaction;
+import com.example.tmps_lab.model.TransactionTemplate;
 import com.example.tmps_lab.repository.TransactionRepository;
 
 import org.springframework.stereotype.Service;
@@ -23,6 +24,18 @@ public class TransactionService {
 
     public Transaction create(TransactionCommand command) {
         return dispatcher.process(command);
+    }
+
+    public Transaction createFromTemplate(TransactionTemplate template, long amount) {
+        return create(template.copyWithAmount(amount).toCommand());
+    }
+
+    public Transaction repeat(UUID id, long amount) {
+        Transaction original = repository.findById(id);
+        if (original == null) {
+            throw new IllegalArgumentException("Transaction not found");
+        }
+        return createFromTemplate(TransactionTemplate.from(original), amount);
     }
 
     public Transaction get(UUID id) {

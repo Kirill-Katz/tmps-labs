@@ -6,6 +6,7 @@ import com.example.tmps_lab.model.TransactionType;
 import com.example.tmps_lab.service.processor.TransactionProcessor;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
@@ -24,6 +25,7 @@ public class TransactionDispatcher {
             ));
     }
 
+    @Transactional
     public Transaction process(TransactionCommand command) {
         TransactionProcessor processor = processors.get(command.type());
 
@@ -31,6 +33,6 @@ public class TransactionDispatcher {
             throw new IllegalArgumentException("Unsupported transaction type");
         }
 
-        return processor.process(command);
+        return processor.execute(command);
     }
 }

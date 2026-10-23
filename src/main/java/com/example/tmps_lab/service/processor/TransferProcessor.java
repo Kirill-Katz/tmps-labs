@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 import com.example.tmps_lab.dto.TransactionCommand;
 import com.example.tmps_lab.model.TransactionType;
 import com.example.tmps_lab.model.Transaction;
+import com.example.tmps_lab.model.TransferTransaction;
 import com.example.tmps_lab.model.Account;
 import com.example.tmps_lab.repository.AccountRepository;
 import com.example.tmps_lab.repository.TransactionRepository;
@@ -12,15 +13,14 @@ import com.example.tmps_lab.repository.TransactionRepository;
 import java.util.UUID;
 
 @Component
-public class TransferProcessor implements TransactionProcessor {
-    private final TransactionRepository transRepo;
+public class TransferProcessor extends TransactionProcessor {
     private final AccountRepository accRepo;
 
     public TransferProcessor(
         TransactionRepository transRepo,
         AccountRepository accRepo
     ) {
-        this.transRepo = transRepo;
+        super(transRepo);
         this.accRepo = accRepo;
     }
 
@@ -30,7 +30,7 @@ public class TransferProcessor implements TransactionProcessor {
     }
 
     @Override
-    public Transaction process(TransactionCommand command) {
+    protected void process(TransactionCommand command) {
         if (command.amount() <= 0) {
             throw new IllegalArgumentException("Amount must be positive");
         }
@@ -46,12 +46,15 @@ public class TransferProcessor implements TransactionProcessor {
             throw new IllegalArgumentException("Cannot transfer to the same account");
         }
 
-        Account fromAccount = accRepo.findById(fromAccountId);
+        // Lock both rows in a stable order to avoid deadlocks on opposite transfers.
+        Account first = accRepo.findById(fromAccountId.compareTo(toAccountId) < 0 ? fromAccountId : toAccountId);
+        Account second = accRepo.findById(fromAccountId.compareTo(toAccountId) < 0 ? toAccountId : fromAccountId);
+        Account fromAccount = fromAccountId.compareTo(toAccountId) < 0 ? first : second;
         if (fromAccount == null) {
             throw new IllegalArgumentException("From account not found");
         }
 
-        Account toAccount = accRepo.findById(toAccountId);
+        Account toAccount = fromAccountId.compareTo(toAccountId) < 0 ? second : first;
         if (toAccount == null) {
             throw new IllegalArgumentException("To account not found");
         }
@@ -66,14 +69,10 @@ public class TransferProcessor implements TransactionProcessor {
         accRepo.save(new Account(fromAccountId, newFromBalance));
         accRepo.save(new Account(toAccountId, newToBalance));
 
-        Transaction transaction = new Transaction(
-            UUID.randomUUID(),
-            fromAccountId,
-            toAccountId,
-            TransactionType.TRANSFER,
-            command.amount()
-        );
+    }
 
-        return transRepo.save(transaction);
+    @Override
+    protected Transaction createTransaction(UUID id, TransactionCommand command) {
+        return new TransferTransaction(id, command.fromAccountId(), command.toAccountId(), command.amount());
     }
 }

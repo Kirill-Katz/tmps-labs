@@ -7,8 +7,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-import com.example.tmps_lab.model.Transaction;
 import com.example.tmps_lab.dto.TransactionCommand;
+import com.example.tmps_lab.dto.RepeatTransactionRequest;
+import com.example.tmps_lab.dto.TransactionResponse;
 import com.example.tmps_lab.service.TransactionService;
 
 import java.util.UUID;
@@ -23,14 +24,22 @@ public class TransactionController {
     }
 
     @GetMapping("/{id}")
-    public Transaction getTransaction(@PathVariable UUID id) {
-        return service.get(id);
+    public TransactionResponse getTransaction(@PathVariable UUID id) {
+        return TransactionResponse.from(service.get(id));
     }
 
     @PostMapping
-    public Transaction createTransaction(
+    public TransactionResponse createTransaction(
         @RequestBody TransactionCommand command
     ) {
-        return service.create(command);
+        return TransactionResponse.from(service.create(command));
+    }
+
+    @PostMapping("/{id}/repeat")
+    public TransactionResponse repeatTransaction(
+        @PathVariable UUID id,
+        @RequestBody RepeatTransactionRequest request
+    ) {
+        return TransactionResponse.from(service.repeat(id, request.amount()));
     }
 }
