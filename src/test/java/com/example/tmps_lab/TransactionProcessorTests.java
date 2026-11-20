@@ -105,7 +105,7 @@ class TransactionProcessorTests {
         accounts.save(new Account(accountId, 0));
         var service = new TransactionService(new TransactionDispatcher(List.of(
             new DepositProcessor(transactions, accounts)
-        )), transactions);
+        ), event -> {}), transactions);
 
         Transaction original = service.create(TransactionCommand.builder()
             .type(TransactionType.DEPOSIT).toAccountId(accountId).amount(10).build());

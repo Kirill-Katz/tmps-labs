@@ -1,6 +1,7 @@
 package com.example.tmps_lab;
 
 import com.example.tmps_lab.dto.TransactionCommand;
+import com.example.tmps_lab.event.TransactionMetricsListener;
 import com.example.tmps_lab.model.Account;
 import com.example.tmps_lab.model.Transaction;
 import com.example.tmps_lab.model.TransactionType;
@@ -12,9 +13,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 @Import(TestcontainersConfiguration.class)
 @SpringBootTest
@@ -23,6 +27,34 @@ class PostgresStorageTests {
     @Autowired TransactionService transactions;
     @Autowired AccountRepository accountRepository;
     @Autowired TransactionRepository transactionRepository;
+    @Autowired TransactionMetricsListener metrics;
+    @Autowired PlatformTransactionManager transactionManager;
+
+    @Test
+    void completionObserversFollowDatabaseCommitAndRollback() {
+        Account account = accounts.create();
+        long before = metrics.completedCount(TransactionType.DEPOSIT);
+        var boundary = new TransactionTemplate(transactionManager);
+
+        Transaction rolledBack = boundary.execute(status -> {
+            Transaction result = transactions.create(new TransactionCommand(
+                TransactionType.DEPOSIT, null, account.id(), 25));
+            assertEquals(before, metrics.completedCount(TransactionType.DEPOSIT));
+            status.setRollbackOnly();
+            return result;
+        });
+
+        assertNotNull(rolledBack);
+        assertNull(transactionRepository.findById(rolledBack.id()));
+        assertEquals(0, accountRepository.findById(account.id()).balance());
+        assertEquals(before, metrics.completedCount(TransactionType.DEPOSIT));
+
+        Transaction committed = transactions.create(new TransactionCommand(
+            TransactionType.DEPOSIT, null, account.id(), 25));
+        assertNotNull(transactionRepository.findById(committed.id()));
+        assertEquals(25, accountRepository.findById(account.id()).balance());
+        assertEquals(before + 1, metrics.completedCount(TransactionType.DEPOSIT));
+    }
 
     @Test
     void persistsBalancesAndBothTransactionEndpoints() {

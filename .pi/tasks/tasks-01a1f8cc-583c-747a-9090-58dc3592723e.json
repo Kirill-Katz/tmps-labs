@@ -1,0 +1,27 @@
+{
+  "nextId": 3,
+  "tasks": [
+    {
+      "id": "1",
+      "subject": "Implement transaction-completion Observer pattern",
+      "description": "Inspect storage and transaction boundaries, add Spring completion events and independent listeners without changing HTTP contracts.",
+      "status": "completed",
+      "metadata": {},
+      "blocks": [],
+      "blockedBy": [],
+      "createdAt": 1795175829032,
+      "updatedAt": 1795175907110
+    },
+    {
+      "id": "2",
+      "subject": "Test completion events and document behavioral patterns",
+      "description": "Test successful processing, failure and transaction commit/rollback semantics; document Observer, Strategy and Template Method in a lab report and run appropriate tests.",
+      "status": "completed",
+      "metadata": {},
+      "blocks": [],
+      "blockedBy": [],
+      "createdAt": 1795175837963,
+      "updatedAt": 1795176043121
+    }
+  ]
+}
