@@ -10,29 +10,29 @@ import org.springframework.web.bind.annotation.RequestBody;
 import com.example.tmps_lab.dto.TransactionCommand;
 import com.example.tmps_lab.dto.RepeatTransactionRequest;
 import com.example.tmps_lab.dto.TransactionResponse;
-import com.example.tmps_lab.service.TransactionService;
+import com.example.tmps_lab.service.BankingFacade;
 
 import java.util.UUID;
 
 @RestController
 @RequestMapping("/transactions")
 public class TransactionController {
-    private final TransactionService service;
+    private final BankingFacade banking;
 
-    public TransactionController(TransactionService service) {
-        this.service = service;
+    public TransactionController(BankingFacade banking) {
+        this.banking = banking;
     }
 
     @GetMapping("/{id}")
     public TransactionResponse getTransaction(@PathVariable UUID id) {
-        return TransactionResponse.from(service.get(id));
+        return TransactionResponse.from(banking.getTransaction(id));
     }
 
     @PostMapping
     public TransactionResponse createTransaction(
         @RequestBody TransactionCommand command
     ) {
-        return TransactionResponse.from(service.create(command));
+        return TransactionResponse.from(banking.createTransaction(command));
     }
 
     @PostMapping("/{id}/repeat")
@@ -40,6 +40,6 @@ public class TransactionController {
         @PathVariable UUID id,
         @RequestBody RepeatTransactionRequest request
     ) {
-        return TransactionResponse.from(service.repeat(id, request.amount()));
+        return TransactionResponse.from(banking.repeatTransaction(id, request.amount()));
     }
 }

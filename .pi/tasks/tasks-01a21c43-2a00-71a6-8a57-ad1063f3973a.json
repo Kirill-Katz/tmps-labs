@@ -1,0 +1,38 @@
+{
+  "nextId": 4,
+  "tasks": [
+    {
+      "id": "1",
+      "subject": "Inspect lab conventions and banking code",
+      "description": "Read reports, application code and tests to determine minimal structural-pattern integration.",
+      "status": "completed",
+      "metadata": {},
+      "blocks": [],
+      "blockedBy": [],
+      "createdAt": 1795770589874,
+      "updatedAt": 1795770643528
+    },
+    {
+      "id": "2",
+      "subject": "Integrate structural patterns and regression tests",
+      "description": "Route controllers through BankingFacade, document the JDBC account adapter, wire LoggingTransactionRepository as the primary repository with explicit qualified delegate, and test behavior, logging and Spring wiring.",
+      "status": "completed",
+      "metadata": {},
+      "blocks": [],
+      "blockedBy": [],
+      "createdAt": 1795770651265,
+      "updatedAt": 1795770839217
+    },
+    {
+      "id": "3",
+      "subject": "Verify changes and write Lab 4 report",
+      "description": "Run focused and full tests as supported, review behavior, and write repots/lab4.md matching existing report style with roles, diagrams and honest verification results.",
+      "status": "completed",
+      "metadata": {},
+      "blocks": [],
+      "blockedBy": [],
+      "createdAt": 1795770654635,
+      "updatedAt": 1795770961378
+    }
+  ]
+}

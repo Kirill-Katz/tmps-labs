@@ -51,7 +51,17 @@ events.publishEvent(new TransactionCompletedEvent(transaction));
 return transaction;
 ```
 
-Spring's `ApplicationEventPublisher` distributes the event to independently registered observers:
+The project defines an explicit [`TransactionObserver`](../src/main/java/com/example/tmps_lab/event/TransactionObserver.java) interface:
+
+```java
+public interface TransactionObserver {
+    void onTransactionCompleted(TransactionCompletedEvent event);
+}
+```
+
+Both `TransactionAuditListener` and `TransactionMetricsListener` implement this interface and override its callback. This makes the observer contract visible in application code. Spring's `ApplicationEventPublisher` still handles registration and event delivery through the listeners' annotations; the interface itself does not subscribe or notify observers.
+
+Spring distributes the event to these independently registered observers:
 
 | Observer | Responsibility |
 | --- | --- |

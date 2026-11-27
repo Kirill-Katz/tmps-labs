@@ -10,7 +10,7 @@ import org.springframework.transaction.event.TransactionalEventListener;
 
 /** Process-local counters: reset on restart and are not shared across instances. */
 @Component
-public class TransactionMetricsListener {
+public class TransactionMetricsListener implements TransactionObserver {
     private final Map<TransactionType, LongAdder> completed = new EnumMap<>(TransactionType.class);
 
     public TransactionMetricsListener() {
@@ -19,6 +19,7 @@ public class TransactionMetricsListener {
         }
     }
 
+    @Override
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onTransactionCompleted(TransactionCompletedEvent event) {
         completed.get(event.transaction().type()).increment();

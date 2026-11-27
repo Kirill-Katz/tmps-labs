@@ -6,6 +6,11 @@ import java.util.UUID;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+/**
+ * Object Adapter: AccountRepository is the application's target interface;
+ * JdbcTemplate is the adaptee. This class translates domain operations into SQL
+ * and maps JDBC result rows back into Account objects.
+ */
 @Repository
 public class PostgresAccountRepository implements AccountRepository {
     private final JdbcTemplate jdbc;

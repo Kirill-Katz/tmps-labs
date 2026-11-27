@@ -1,6 +1,11 @@
 package com.example.tmps_lab;
 
+import com.example.tmps_lab.controller.AccountController;
+import com.example.tmps_lab.controller.TransactionController;
 import com.example.tmps_lab.dto.TransactionCommand;
+import com.example.tmps_lab.dto.RepeatTransactionRequest;
+import com.example.tmps_lab.repository.LoggingTransactionRepository;
+import com.example.tmps_lab.service.BankingFacade;
 import com.example.tmps_lab.event.TransactionMetricsListener;
 import com.example.tmps_lab.model.Account;
 import com.example.tmps_lab.model.Transaction;
@@ -17,6 +22,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
@@ -29,6 +35,23 @@ class PostgresStorageTests {
     @Autowired TransactionRepository transactionRepository;
     @Autowired TransactionMetricsListener metrics;
     @Autowired PlatformTransactionManager transactionManager;
+    @Autowired BankingFacade banking;
+    @Autowired AccountController accountController;
+    @Autowired TransactionController transactionController;
+
+    @Test
+    void springWiresFacadeAndPrimaryDecoratorIntoTheBankingFlow() {
+        assertInstanceOf(LoggingTransactionRepository.class, transactionRepository);
+        Account account = accountController.create();
+        var deposit = transactionController.createTransaction(new TransactionCommand(
+            TransactionType.DEPOSIT, null, account.id(), 20));
+        var repeated = transactionController.repeatTransaction(deposit.id(), new RepeatTransactionRequest(5));
+
+        assertEquals(25, accountController.get(account.id()).balance());
+        assertEquals(deposit, transactionController.getTransaction(deposit.id()));
+        assertEquals(5, banking.getTransaction(repeated.id()).amount());
+        assertEquals(25, banking.getAccount(account.id()).balance());
+    }
 
     @Test
     void completionObserversFollowDatabaseCommitAndRollback() {
